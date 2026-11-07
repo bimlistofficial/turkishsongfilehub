@@ -12,6 +12,7 @@ export default async (request) => {
         id: record.id,
         title: record.title,
         artist: record.artist,
+        level: record.level || "",
         submitter: record.submitter,
         genre: record.genre,
         createdAt: record.createdAt,

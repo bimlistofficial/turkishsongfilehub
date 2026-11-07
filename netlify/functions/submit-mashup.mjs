@@ -15,12 +15,13 @@ export default async (request) => {
   const title = String(form.get("title") || "").trim().slice(0, 100);
   const submitter = String(form.get("submitter") || "").trim().slice(0, 50);
   const artist = String(form.get("artist") || "").trim().slice(0, 80);
+  const level = String(form.get("level") || "").trim().slice(0, 100);
   const genre = String(form.get("genre") || "Mashup").trim().slice(0, 32) || "Mashup";
   const rightsConfirmed = form.get("rights") === "yes";
   const audio = form.get("audio");
   const cover = form.get("cover");
 
-  if (!title || !submitter || !artist || !rightsConfirmed || !audio || typeof audio.arrayBuffer !== "function" || !audio.size) {
+  if (!title || !submitter || !artist || !level || !rightsConfirmed || !audio || typeof audio.arrayBuffer !== "function" || !audio.size) {
     return Response.json({ error: "Ad, başlık, sanatçı ve ses dosyası gerekli." }, { status: 400 });
   }
   if (!audioTypes.has(audio.type)) return Response.json({ error: "Ses dosyası MP3, WAV, OGG, AAC veya M4A olmalı." }, { status: 415 });
@@ -36,7 +37,7 @@ export default async (request) => {
 
   await media.set(`${id}/audio`, audio, { metadata: { contentType: audio.type } });
   if (cover?.size) await media.set(`${id}/cover`, cover, { metadata: { contentType: cover.type } });
-  await submissions.set(id, JSON.stringify({ id, title, submitter, artist, genre, createdAt, status: "pending", hasCover: !!cover?.size }));
+  await submissions.set(id, JSON.stringify({ id, title, submitter, artist, level, genre, createdAt, status: "pending", hasCover: !!cover?.size }));
 
   return Response.json({ ok: true, id }, { status: 201 });
 };
