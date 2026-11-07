@@ -13,6 +13,7 @@ export default async (request) => {
         title: record.title,
         artist: record.artist,
         level: record.level || "",
+        youtubeUrl: record.youtubeUrl || "",
         submitter: record.submitter,
         genre: record.genre,
         createdAt: record.createdAt,

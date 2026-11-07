@@ -43,10 +43,14 @@ export default async (request) => {
       return json({ ok: true });
     }
 
-    await store.delete(id);
     const media = getStore("tsfh-submission-media", { consistency: "strong" });
     await media.delete(`${id}/audio`);
     if (record.hasCover) await media.delete(`${id}/cover`);
+    if (action === "reject") {
+      await store.set(id, JSON.stringify({ ...record, status: "rejected", reviewedAt: new Date().toISOString(), hasCover: false }));
+      return json({ ok: true });
+    }
+    await store.delete(id);
     return json({ ok: true });
   }
   return json({ error: "Yalnızca GET veya POST isteği kabul edilir." }, 405);
