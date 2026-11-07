@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { makeSessionCookie } from "../lib/moderator-session.mjs";
 
 export default async (request) => {
   if (request.method !== "POST") {
@@ -7,10 +8,7 @@ export default async (request) => {
 
   const expected = process.env.MODERATOR_PASSWORD;
   if (!expected) {
-    return Response.json(
-      { error: "MODERATOR_PASSWORD Netlify ortam ayarında tanımlanmamış." },
-      { status: 503 },
-    );
+    return Response.json({ error: "Netlify ortam değişkeni tanımlanmamış." }, { status: 503 });
   }
 
   let submitted;
@@ -24,10 +22,7 @@ export default async (request) => {
   const provided = Buffer.from(submitted, "utf8");
   const configured = Buffer.from(expected, "utf8");
   const matches = provided.length === configured.length && timingSafeEqual(provided, configured);
+  if (!matches) return Response.json({ error: "Şifre yanlış." }, { status: 401 });
 
-  if (!matches) {
-    return Response.json({ error: "Şifre yanlış." }, { status: 401 });
-  }
-
-  return Response.json({ ok: true });
+  return Response.json({ ok: true }, { headers: { "Set-Cookie": makeSessionCookie(expected) } });
 };
