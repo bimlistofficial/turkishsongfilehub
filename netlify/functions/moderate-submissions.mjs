@@ -29,11 +29,14 @@ export default async (request) => {
     let body;
     try { body = await request.json(); } catch { return json({ error: "İstek okunamadı." }, 400); }
     const { id, action } = body || {};
-    if (typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id) || !["approve", "reject"].includes(action)) {
+    if (typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id) || !["approve", "reject", "delete"].includes(action)) {
       return json({ error: "Geçersiz işlem." }, 400);
     }
     const record = await store.get(id, { type: "json" });
-    if (!record || record.status !== "pending") return json({ error: "Bekleyen gönderi bulunamadı." }, 404);
+    if (!record || !["pending", "approved"].includes(record.status)) return json({ error: "Mashup bulunamadı." }, 404);
+    if (action === "delete" ? record.status !== "approved" : record.status !== "pending") {
+      return json({ error: "Bu işlem bu mashup durumu için kullanılamıyor." }, 409);
+    }
 
     if (action === "approve") {
       await store.set(id, JSON.stringify({ ...record, status: "approved", reviewedAt: new Date().toISOString() }));
